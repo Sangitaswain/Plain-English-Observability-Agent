@@ -19,3 +19,4 @@ eval_results_*.json
 
 # Private project documentation
 docs/
+CLAUDE.md
