@@ -1,0 +1,10 @@
+.env
+*.env
+.venv/
+__pycache__/
+*.pyc
+backend/eval_results_*.json
+backend/eval_history.md
+docs/
+.git/
+.gitignore

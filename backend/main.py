@@ -28,7 +28,6 @@ app.add_middleware(
 )
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
-os.makedirs(FRONTEND_DIR, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
