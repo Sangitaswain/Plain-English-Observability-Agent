@@ -1,0 +1,21 @@
+# Secrets — never commit these
+.env
+*.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# VS Code (the mcp.json connectivity test file lives here)
+.vscode/
+
+# Local test outputs
+eval_results_*.json
+
+# Private project documentation
+docs/
