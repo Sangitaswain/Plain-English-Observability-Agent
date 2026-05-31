@@ -10,7 +10,7 @@ from google.adk.tools import FunctionTool
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "system_prompt.txt")
 
 def _load_system_prompt() -> str:
-    with open(SYSTEM_PROMPT_PATH) as f:
+    with open(SYSTEM_PROMPT_PATH, encoding="utf-8") as f:
         return f.read()
 
 async def run_dql(query: str) -> dict:
