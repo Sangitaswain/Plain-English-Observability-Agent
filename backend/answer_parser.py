@@ -50,7 +50,7 @@ def parse_agent_output(raw_text: str) -> ParsedAnswer:
     headline = sentences[0].strip()
     if not headline.endswith(".") and not headline.endswith("?") and not headline.endswith("!"):
         headline += "."
-    paragraph = sentences[1].strip() if len(sentences) > 1 else ""
+    paragraph = sentences[1].replace("\n", " ").strip() if len(sentences) > 1 else ""
 
     # Guard: never return empty headline
     if not headline or headline == ".":
