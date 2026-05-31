@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response
@@ -28,6 +28,12 @@ except Exception:
     pass
 
 log = logging.getLogger("observability_agent")
+import sys as _sys
+if not log.handlers:
+    _h = logging.StreamHandler(_sys.stdout)
+    _h.setLevel(logging.DEBUG)
+    log.addHandler(_h)
+log.setLevel(logging.DEBUG)
 
 app = FastAPI()
 
