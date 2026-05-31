@@ -48,7 +48,7 @@ def parse_agent_output(raw_text: str) -> ParsedAnswer:
     # Split into headline (first sentence) and paragraph (rest)
     sentences = text.split(". ", 1)
     headline = sentences[0].strip()
-    if not headline.endswith("."):
+    if not headline.endswith(".") and not headline.endswith("?") and not headline.endswith("!"):
         headline += "."
     paragraph = sentences[1].strip() if len(sentences) > 1 else ""
 
