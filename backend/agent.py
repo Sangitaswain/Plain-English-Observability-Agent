@@ -3,6 +3,7 @@
 
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 import httpx
 from google.adk.agents import LlmAgent
@@ -13,6 +14,25 @@ SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "system_prompt.txt"
 def _load_system_prompt() -> str:
     with open(SYSTEM_PROMPT_PATH, encoding="utf-8") as f:
         return f.read()
+
+def _expand_timeseries(row: dict) -> list:
+    """Convert makeTimeseries single-row format to individual timestamped records."""
+    start = datetime.fromisoformat(row["timeframe"]["start"].replace("Z", "+00:00"))
+    interval_s = int(row["interval"]) / 1e9
+    metric_key = next((k for k, v in row.items() if isinstance(v, list)), None)
+    if not metric_key:
+        return []
+    result = []
+    for i, val in enumerate(row[metric_key]):
+        if val is None:
+            continue
+        t = start + timedelta(seconds=i * interval_s)
+        hour = int(t.strftime("%I"))
+        minute = t.strftime("%M")
+        ampm = t.strftime("%p")
+        result.append({"timestamp": f"{hour}:{minute} {ampm}", "count": int(val)})
+    return result
+
 
 @asynccontextmanager
 async def get_agent_and_tools(
@@ -38,7 +58,13 @@ async def get_agent_and_tools(
             )
             if resp.status_code >= 400:
                 return {"error": f"Query failed ({resp.status_code})", "records": []}
-            return resp.json()
+            data = resp.json()
+            records = data.get("result", data).get("records", data.get("records", []))
+            # Normalize makeTimeseries single-row array format into per-row records
+            if len(records) == 1 and "timeframe" in records[0] and "interval" in records[0]:
+                records = _expand_timeseries(records[0])
+                return {"records": records}
+            return data
 
     async def get_problems() -> dict:
         """Fetch active Dynatrace problems via DQL event query."""
