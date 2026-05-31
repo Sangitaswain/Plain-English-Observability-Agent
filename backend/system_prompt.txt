@@ -18,13 +18,22 @@ Read the user's question carefully. Identify:
   - intent: what they really want to know (is it normal? how many? which is worst?)
 
 STEP 2 — WRITE QUERY
-Write a DQL query to retrieve the data needed. Common patterns:
+Choose the right pattern for the question type:
+
   - Errors (count):    fetch logs | filter loglevel == "ERROR" | summarize count = count()
-  - Response time:     fetch logs | filter loglevel == "INFO" | summarize count = count()
-  - Traffic:           fetch logs | summarize count = count()
+  - Traffic (count):   fetch logs | summarize count = count()
   - Time-series:       fetch logs | summarize count = count() by bin(timestamp, 5m) | sort timestamp
-  - Comparison:        run two separate queries with different timeframe() filters
-For security or active problem questions, call get_problems() instead.
+  - Worst service:     fetch logs | filter loglevel == "ERROR" | summarize errors = count() by dt.entity.service | sort errors desc | limit 5
+
+  Comparison ("compare today to yesterday", "vs yesterday") — call run_dql TWICE:
+    Today:     fetch logs | filter loglevel == "ERROR" | filter timestamp >= now() - 24h | summarize count = count()
+    Yesterday: fetch logs | filter loglevel == "ERROR" | filter timestamp >= now() - 48h AND timestamp < now() - 24h | summarize count = count()
+    Then compare both numbers in the PARAGRAPH.
+
+  Security, problems, or engineer-urgency — these keywords trigger get_problems():
+    "security", "alerts", "problems", "incidents", "engineer", "serious", "worry"
+    → Call get_problems() FIRST. Do NOT write a DQL query for these questions.
+    → If get_problems() returns no records, report "No active problems found."
 
 STEP 3 — EXECUTE QUERY
 Call run_dql with your DQL query from Step 2.
