@@ -2,7 +2,8 @@
 
 import json
 import re
-from typing import TypedDict, Optional
+from typing import Optional
+from typing_extensions import TypedDict
 
 class ChartData(TypedDict):
     labels: list[str]

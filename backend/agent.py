@@ -16,7 +16,7 @@ def _load_system_prompt() -> str:
 async def run_dql(query: str) -> dict:
     """Execute a DQL query against Dynatrace Grail and return results."""
     base = os.environ["DT_TENANT_URL"].rstrip("/")
-    token = os.environ["DT_PLATFORM_TOKEN"]
+    token = os.environ["DT_PLATFORM_TOKEN"].strip()
     url = f"{base}/platform/storage/query/v1/query:execute"
     async with httpx.AsyncClient(timeout=30.0) as client:
         resp = await client.post(
