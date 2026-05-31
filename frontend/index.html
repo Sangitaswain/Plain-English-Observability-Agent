@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:;">
+  <title>Signal AI — Plain-English Observability</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" integrity="sha384-e6cc9LaIG7xZ3XD5B+jtr1NhTWPQGQdRCh6xiZ+ZFUtWCpg4ycv3Sh+SkZoopvUY" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN 1: CONNECT / ONBOARDING
+  ════════════════════════════════════════════ -->
+  <div id="connect-screen">
+    <div class="connect-layout">
+
+      <!-- Left decorative panel -->
+      <div class="connect-left">
+        <div class="cl-inner">
+          <div class="brand">
+            <span class="brand-dot" aria-hidden="true"></span>
+            <span class="brand-name">Signal</span>
+            <span class="brand-badge">AI</span>
+          </div>
+
+          <h1 class="connect-headline">Your website's<br>health, in<br>plain English.</h1>
+
+          <ul class="connect-benefits" aria-label="Key features">
+            <li><span class="benefit-star" aria-hidden="true">✦</span>No query languages needed</li>
+            <li><span class="benefit-star" aria-hidden="true">✦</span>Real-time Dynatrace data</li>
+            <li><span class="benefit-star" aria-hidden="true">✦</span>One question, one clear answer</li>
+          </ul>
+
+          <!-- Floating metric preview cards -->
+          <div class="metric-cards" aria-hidden="true">
+            <div class="mcard mcard--1">
+              <div class="mcard__label">Response Time</div>
+              <div class="mcard__value">142 <span class="mcard__unit">ms</span></div>
+              <div class="mcard__status mcard__status--ok">● Normal</div>
+            </div>
+            <div class="mcard mcard--2">
+              <div class="mcard__label">Error Rate</div>
+              <div class="mcard__value">0.02<span class="mcard__unit">%</span></div>
+              <div class="mcard__status mcard__status--ok">● Healthy</div>
+            </div>
+            <div class="mcard mcard--3">
+              <div class="mcard__label">Active Users</div>
+              <div class="mcard__value">3,412</div>
+              <div class="mcard__status mcard__status--ok">● Live</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right form panel -->
+      <div class="connect-right">
+        <div class="connect-form-wrap">
+
+          <div class="connect-form-header">
+            <h2 class="connect-form-title">Connect your account</h2>
+            <p class="connect-form-sub">Link your Dynatrace tenant to get started.</p>
+          </div>
+
+          <form id="connect-form" novalidate>
+
+            <div class="field">
+              <label class="field__label" for="tenant-url">Dynatrace Tenant URL</label>
+              <input
+                type="url"
+                id="tenant-url"
+                class="field__input"
+                placeholder="https://your-tenant.apps.dynatrace.com"
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <span class="field__hint">Found in your Dynatrace account settings</span>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="api-token">Platform API Token</label>
+              <div class="field__pw-wrap">
+                <input
+                  type="password"
+                  id="api-token"
+                  class="field__input"
+                  placeholder="dt0..."
+                  autocomplete="off"
+                  spellcheck="false"
+                >
+                <button type="button" class="pw-toggle" id="toggle-token" aria-label="Show token">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="field__hint">Needs storage:logs:read, storage:metrics:read, storage:events:read</span>
+            </div>
+
+            <div id="connect-error" class="connect-error hidden" role="alert"></div>
+
+            <button type="submit" class="connect-btn" id="connect-btn">
+              <span class="connect-btn__text">Connect to Dynatrace</span>
+              <span class="connect-btn__arrow" aria-hidden="true">→</span>
+            </button>
+
+          </form>
+
+          <div class="divider"><span>or</span></div>
+
+          <button class="demo-btn" id="use-demo-btn" type="button">
+            Use demo account (Dynatrace Playground)
+          </button>
+
+          <p class="connect-footnote">
+            Read-only access &middot; Credentials stay in your browser session only
+          </p>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN 2: MAIN APP
+  ════════════════════════════════════════════ -->
+  <div id="app-screen" class="hidden">
+
+    <div class="app-orb app-orb--a" aria-hidden="true"></div>
+    <div class="app-orb app-orb--b" aria-hidden="true"></div>
+
+    <nav class="app-nav" role="navigation">
+      <div class="app-nav__inner">
+        <div class="brand">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-name">Signal</span>
+          <span class="brand-badge">AI</span>
+        </div>
+        <div class="nav-conn">
+          <span class="nav-conn__dot" aria-hidden="true"></span>
+          <span class="nav-conn__label" id="nav-tenant-label">Connected</span>
+          <button class="nav-disconnect" id="disconnect-btn" title="Disconnect account" aria-label="Disconnect account">✕</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="app-main">
+
+      <div class="app-hero">
+        <h2 class="app-hero__title">What would you like to check?</h2>
+        <p class="app-hero__sub">Ask in plain English — no monitoring knowledge needed.</p>
+        <p class="app-hero__preview" aria-hidden="true">"No. Everything is running normally."</p>
+      </div>
+
+      <div class="chips-row" aria-label="Example questions">
+        <button class="chip" id="chip-1" data-question="Was checkout slow today?">
+          <span class="chip-icon" aria-hidden="true">⚡</span>Was checkout slow today?
+        </button>
+        <button class="chip" id="chip-2" data-question="Any errors in the last hour?">
+          <span class="chip-icon" aria-hidden="true">🔴</span>Any errors in the last hour?
+        </button>
+        <button class="chip" id="chip-3" data-question="How many visitors today?">
+          <span class="chip-icon" aria-hidden="true">👥</span>How many visitors today?
+        </button>
+      </div>
+
+      <div class="input-row">
+        <label for="question-input" class="sr-only">Your question</label>
+        <div class="input-wrap">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            id="question-input"
+            placeholder="Ask about your site health..."
+            maxlength="500"
+            autocomplete="off"
+          >
+        </div>
+        <button id="ask-btn" type="button">
+          <span class="btn-text">Ask</span>
+          <span class="btn-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+
+      <div id="error-banner" class="error-banner hidden" role="alert"></div>
+
+      <section id="loading-section" class="hidden" aria-live="polite">
+        <div class="loading-row">
+          <div class="pulse-wrap" aria-hidden="true">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring pulse-ring--2"></div>
+            <div class="pulse-core"></div>
+          </div>
+          <div>
+            <p class="loading-text">Querying your systems<span class="dots" aria-hidden="true"></span></p>
+            <p class="loading-note">Usually takes 10–20 seconds</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="answer-section" class="hidden" aria-live="polite">
+        <div class="answer-card">
+          <div class="answer-card__tag" aria-hidden="true">Answer</div>
+          <p id="answer-headline"></p>
+        </div>
+        <canvas id="answer-chart" class="hidden"></canvas>
+        <p id="answer-paragraph" class="answer-para"></p>
+        <div id="answer-uncertainty" class="uncertainty-box hidden">
+          <span aria-hidden="true">⚠</span>
+          <span>The data looks unusual — please ask your engineer to confirm.</span>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <p>Signal AI &middot; Powered by Gemini &amp; Dynatrace &middot; Read-only &middot; No data stored or modified</p>
+    </footer>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

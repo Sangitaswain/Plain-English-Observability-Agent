@@ -6,9 +6,12 @@ from collections import defaultdict, deque
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException, Request
+import re
+from fastapi import FastAPI, HTTPException, Request, Header
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+
+_DT_URL_RE = re.compile(r'^https://[a-zA-Z0-9-]+\.apps\.dynatrace\.com$')
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
@@ -52,7 +55,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "X-DT-Tenant-URL", "X-DT-Token"],
     allow_credentials=False,
 )
 
@@ -95,7 +98,12 @@ def index():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 @app.post("/ask", response_model=AskResponse)
-async def ask(req: AskRequest, request: Request):
+async def ask(
+    req: AskRequest,
+    request: Request,
+    x_dt_tenant_url: Optional[str] = Header(None, alias="X-DT-Tenant-URL"),
+    x_dt_token: Optional[str] = Header(None, alias="X-DT-Token"),
+):
     ip = request.client.host or "unknown"
 
     if _is_rate_limited(ip):
@@ -104,9 +112,17 @@ async def ask(req: AskRequest, request: Request):
             detail="Too many questions. Please wait a moment before asking again."
         )
 
+    # Validate custom tenant URL if provided
+    if x_dt_tenant_url:
+        if not _DT_URL_RE.match(x_dt_tenant_url.rstrip("/")):
+            raise HTTPException(status_code=400, detail="Invalid tenant URL format.")
+
     log.info(f"question received | ip={ip} | q={req.question!r}")
 
-    async with get_agent_and_tools() as agent:
+    async with get_agent_and_tools(
+        tenant_url=x_dt_tenant_url or None,
+        token=x_dt_token or None,
+    ) as agent:
         session_service = InMemorySessionService()
         runner = Runner(
             agent=agent,
