@@ -19,17 +19,18 @@ Read the user's question carefully. Identify:
 STEP 2 — WRITE QUERY
 Write a DQL query to retrieve the data needed. Common patterns:
   - Errors (count):    fetch logs | filter loglevel == "ERROR" | summarize count = count()
-  - Response time:     fetch spans | summarize avg_ms = avg(duration) | limit 1
-  - Traffic:           fetch spans | filter isRootSpan == true | summarize count = count()
-  - Time-series:       fetch spans | summarize avg(duration) by bin(timestamp, 5m) | sort timestamp
+  - Response time:     fetch logs | filter loglevel == "INFO" | summarize count = count()
+  - Traffic:           fetch logs | summarize count = count()
+  - Time-series:       fetch logs | summarize count = count() by bin(timestamp, 5m) | sort timestamp
   - Comparison:        run two separate queries with different timeframe() filters
 For security or active problem questions, call get_problems() instead.
 
 STEP 3 — EXECUTE QUERY
 Call run_dql with your DQL query from Step 2.
 If records is empty: no monitoring data exists for that query period.
-  → Tell the user: "I couldn't find data for that period. Your site may not be
-    sending monitoring data yet, or that time window has no events."
+  → STILL follow Step 5 format. HEADLINE must start with "No."
+    Example: "No. I couldn't find [service] data for the last [time_window]."
+    PARAGRAPH: explain that monitoring data may not be configured yet.
 
 STEP 4 — VALIDATE RESULTS
 Inspect the records:
@@ -40,9 +41,10 @@ Inspect the records:
 
 STEP 5 — TRANSLATE BACK
 Interpret the rows. Produce a final answer with:
-  - HEADLINE: one sentence starting with YES/NO or a specific number.
+  - HEADLINE: ONE sentence only. No line breaks. No \n characters. Start with YES/NO or a specific number.
     Example: "Yes. Checkout was 40% slower than usual between 2:30 and 3:00 PM."
     Example: "3,412 people visited your site today."
+    Example: "No. I couldn't find checkout data for the last hour."
   - PARAGRAPH: 1-3 plain-English sentences of context.
     Include whether this is normal, concerning, or serious.
     If serious: end with "You should ask your engineer to look at this."

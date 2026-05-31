@@ -24,7 +24,8 @@ async def run_dql(query: str) -> dict:
             headers={"Authorization": f"Bearer {token}"},
             json={"query": query, "requestTimeoutMilliseconds": 25000},
         )
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            return {"error": f"Query failed ({resp.status_code})", "records": []}
         return resp.json()
 
 async def get_problems() -> dict:
