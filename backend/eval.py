@@ -27,9 +27,10 @@ async def run_eval():
             try:
                 resp = await client.post(TARGET_URL, json={"question": q["question"]})
                 data = resp.json()
-                print(f"Headline: {data.get('headline')}")
-                print(f"Has chart: {data.get('chart_data') is not None}")
-                print(f"Uncertain: {data.get('uncertainty')}")
+                print(f"Headline:   {data.get('headline')}")
+                print(f"Paragraph:  {data.get('paragraph', '')[:200]}")
+                print(f"Has chart:  {data.get('chart_data') is not None}")
+                print(f"Uncertain:  {data.get('uncertainty')}")
                 print(f"Clarifying: {data.get('needs_clarification')}")
             except Exception as e:
                 print(f"ERROR: {e}")
