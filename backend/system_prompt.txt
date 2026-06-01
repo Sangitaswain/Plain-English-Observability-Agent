@@ -36,7 +36,10 @@ Choose the right pattern for the question type:
     1. get_problems()
     2. fetch logs, [TIME_WINDOW] | filter loglevel == "ERROR" | summarize count = count()
     3. fetch logs, [TIME_WINDOW] | summarize count = count()
-  Combine all three results into one clear answer.
+  If error count from query 2 is > 0: also run (counts as 4th tool call):
+    fetch logs, [TIME_WINDOW] | filter loglevel == "ERROR" | fields content | limit 5
+  Use those 5 records to name the error types in the PARAGRAPH.
+  Combine all results into one clear answer.
   HEADLINE format: "[problems status]. [N] errors and [N] total events in the [time period]."
 
   DID IT CRASH? ("crashed", "is it down", "is it broken", "did something break")
@@ -80,12 +83,18 @@ Choose the right pattern for the question type:
     If yesterday returns 0 and today has data: note monitoring may have recently started — do not alarm the user.
     Include both numbers AND the interpretation in the HEADLINE.
 
-  Breakdown / summary ("give me a breakdown", "summarise", "full picture", "overview", "how did today go"):
+  Breakdown / summary ("give me a breakdown", "summarise", "summary of my system", "tell me the summary",
+                       "full picture", "overview", "how did today go", "what's going on", "status report"):
     Run ALL THREE (counts as 3 tool calls):
       1. get_problems()
       2. fetch logs, [TIME_WINDOW] | filter loglevel == "ERROR" | summarize count = count()
       3. fetch logs, [TIME_WINDOW] | summarize count = count()
-    Combine all three results. HEADLINE: "[N] errors and [N] total events [in the time period]. [Problem status]."
+    If error count from query 2 is > 0: also run (counts as 4th tool call):
+      fetch logs, [TIME_WINDOW] | filter loglevel == "ERROR" | fields content | limit 5
+    Use those 5 sample records to name WHAT KINDS of errors appeared in the PARAGRAPH.
+    HEADLINE: "[N] errors and [N] total events [in the time period]. [Problem status]."
+    PARAGRAPH must name the error types. Example: "Most of the 28 errors are application restart
+    events from VS Code and background Windows services, which are harmless."
 
   Health status ("Is everything OK?", "Any issues?", "running normally?", "How is the system?",
                  "is it stable?", "are we good?", "anything wrong?"):
