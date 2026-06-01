@@ -4,7 +4,7 @@
 
 **Live demo:** https://observability-agent-601086227447.us-central1.run.app
 
-**Demo video:** _coming soon_
+**Demo video:** https://youtu.be/fucFw-flVKw
 
 **Track:** Google Cloud x Dynatrace AI Challenge
 
