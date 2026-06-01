@@ -10,8 +10,7 @@
 
 ---
 
-<!-- Replace the line below with your actual GIF once recorded -->
-<!-- ![Demo](docs/demo.gif) -->
+![Demo](docs/demo.gif)
 
 ---
 
