@@ -63,12 +63,20 @@ def parse_agent_output(raw_text: str) -> ParsedAnswer:
     uncertainty = "UNCERTAIN:" in text
     text = re.sub(r"UNCERTAIN:.*", "", text).strip()
 
-    # Split into headline (first sentence) and paragraph (rest)
-    sentences = text.split(". ", 1)
-    headline = sentences[0].strip()
-    if not headline.endswith(".") and not headline.endswith("?") and not headline.endswith("!"):
-        headline += "."
-    paragraph = sentences[1].replace("\n", " ").strip() if len(sentences) > 1 else ""
+    # Parse labeled format: HEADLINE: ... PARAGRAPH: ...
+    headline_match = re.search(r'HEADLINE:\s*(.+?)(?=\nPARAGRAPH:|\s+PARAGRAPH:|$)', text, re.DOTALL)
+    paragraph_match = re.search(r'PARAGRAPH:\s*(.+?)(?=\nFOLLOWUP:|\nHEADLINE:|\{"chart"|$)', text, re.DOTALL)
+
+    if headline_match:
+        headline = headline_match.group(1).strip().replace("\n", " ")
+        paragraph = paragraph_match.group(1).strip().replace("\n", " ") if paragraph_match else ""
+    else:
+        # Fall back to sentence split for unlabeled output
+        sentences = text.split(". ", 1)
+        headline = sentences[0].strip()
+        if not headline.endswith(".") and not headline.endswith("?") and not headline.endswith("!"):
+            headline += "."
+        paragraph = sentences[1].replace("\n", " ").strip() if len(sentences) > 1 else ""
 
     # Guard: never return empty headline
     if not headline or headline == ".":
