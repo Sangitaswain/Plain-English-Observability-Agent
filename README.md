@@ -20,7 +20,14 @@ Signal AI queries your Dynatrace tenant in real time, interprets the data, and r
 
 ## Architecture
 
-![Architecture diagram](docs/architecture.png)
+![Architecture overview](docs/architecture_overview.png)
+
+<details>
+<summary>Detailed architecture diagram (click to expand)</summary>
+
+![Detailed architecture](docs/architecture.png)
+
+</details>
 
 | Layer | Component | Role |
 |---|---|---|
