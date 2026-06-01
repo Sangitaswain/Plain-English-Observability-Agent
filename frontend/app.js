@@ -34,6 +34,7 @@ const followupChips   = document.getElementById("followup-chips");
 let chartInstance = null;
 let lastQuestion  = null;
 let isFollowUp    = false;
+let isLoading     = false;
 
 // ════════════════════════════════════════════════════════════
 // SESSION
@@ -154,6 +155,7 @@ toggleTokenBtn.addEventListener("click", () => {
 // ════════════════════════════════════════════════════════════
 
 function setStateIdle() {
+  isLoading = false;
   questionInput.disabled = false;
   askBtn.disabled = false;
   askBtn.querySelector(".btn-text").textContent = "Ask";
@@ -162,6 +164,7 @@ function setStateIdle() {
 }
 
 function setStateLoading() {
+  isLoading = true;
   questionInput.disabled = true;
   askBtn.disabled = true;
   askBtn.querySelector(".btn-text").textContent = "…";
@@ -172,6 +175,7 @@ function setStateLoading() {
 }
 
 function setStateAnswered(data) {
+  isLoading = false;
   loadingSection.classList.add("hidden");
   questionInput.disabled = false;
   askBtn.disabled = false;
@@ -216,6 +220,7 @@ function setStateAnswered(data) {
 }
 
 function setStateError(message) {
+  isLoading = false;
   loadingSection.classList.add("hidden");
   questionInput.disabled = false;
   askBtn.disabled = false;
@@ -239,6 +244,8 @@ function setupChips() {
 }
 
 async function submitQuestion() {
+  if (isLoading) return;
+
   const question = questionInput.value.trim();
 
   if (!question) {
