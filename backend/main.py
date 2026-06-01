@@ -79,6 +79,7 @@ def _is_rate_limited(ip: str) -> bool:
 # Schemas
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=500)
+    prev_question: Optional[str] = Field(None, max_length=500)
 
 class AskResponse(BaseModel):
     headline: str
@@ -86,6 +87,7 @@ class AskResponse(BaseModel):
     chart_data: Optional[ChartData] = None
     uncertainty: bool
     needs_clarification: bool
+    followup_questions: list[str] = []
 
 APP_NAME = "observability_agent"
 
@@ -133,9 +135,13 @@ async def ask(
             app_name=APP_NAME,
             user_id=ip,
         )
+        question_text = req.question
+        if req.prev_question:
+            question_text = f"Follow-up to: '{req.prev_question}'. New question: '{req.question}'"
+
         content = types.Content(
             role="user",
-            parts=[types.Part(text=req.question)],
+            parts=[types.Part(text=question_text)],
         )
 
         raw_answer = ""
@@ -165,6 +171,7 @@ async def ask(
                     paragraph="The system took too many steps. Please try rephrasing your question.",
                     uncertainty=True,
                     needs_clarification=False,
+                    followup_questions=[],
                 )
             raise
 
@@ -175,6 +182,7 @@ async def ask(
                 paragraph="I couldn't retrieve that information right now. Please try again in a moment.",
                 uncertainty=True,
                 needs_clarification=False,
+                followup_questions=[],
             )
 
     parsed = parse_agent_output(raw_answer)

@@ -28,8 +28,12 @@ const answerPara     = document.getElementById("answer-paragraph");
 const answerChart    = document.getElementById("answer-chart");
 const answerUncert   = document.getElementById("answer-uncertainty");
 const errorBanner    = document.getElementById("error-banner");
+const followupSection = document.getElementById("followup-section");
+const followupChips   = document.getElementById("followup-chips");
 
 let chartInstance = null;
+let lastQuestion  = null;
+let isFollowUp    = false;
 
 // ════════════════════════════════════════════════════════════
 // SESSION
@@ -131,7 +135,10 @@ disconnectBtn.addEventListener("click", () => {
   clearSession();
   setStateIdle();
   answerSection.classList.add("hidden");
+  followupSection.classList.add("hidden");
   questionInput.value = "";
+  lastQuestion = null;
+  isFollowUp = false;
   showConnectScreen();
 });
 
@@ -159,6 +166,7 @@ function setStateLoading() {
   askBtn.disabled = true;
   askBtn.querySelector(".btn-text").textContent = "…";
   answerSection.classList.add("hidden");
+  followupSection.classList.add("hidden");
   loadingSection.classList.remove("hidden");
   errorBanner.classList.add("hidden");
 }
@@ -182,6 +190,29 @@ function setStateAnswered(data) {
 
   answerUncert.classList.toggle("hidden", !data.uncertainty);
   answerSection.classList.remove("hidden");
+
+  // Render follow-up chips
+  followupChips.replaceChildren();
+  const questions = Array.isArray(data.followup_questions) ? data.followup_questions : [];
+  if (questions.length > 0) {
+    questions.forEach((q) => {
+      const btn = document.createElement("button");
+      btn.className = "followup-chip";
+      btn.textContent = q;
+      btn.type = "button";
+      btn.addEventListener("click", () => {
+        lastQuestion = questionInput.value.trim() || lastQuestion;
+        isFollowUp = true;
+        questionInput.value = q;
+        questionInput.focus();
+        submitQuestion();
+      });
+      followupChips.appendChild(btn);
+    });
+    followupSection.classList.remove("hidden");
+  } else {
+    followupSection.classList.add("hidden");
+  }
 }
 
 function setStateError(message) {
@@ -219,6 +250,11 @@ async function submitQuestion() {
     return;
   }
 
+  // Capture follow-up context before setStateLoading clears state
+  const followUpContext = isFollowUp ? lastQuestion : null;
+  isFollowUp = false;
+  lastQuestion = question;
+
   setStateLoading();
 
   const session = getSession();
@@ -228,11 +264,14 @@ async function submitQuestion() {
   if (session && session.tenantUrl) headers["X-DT-Tenant-URL"] = session.tenantUrl;
   if (session && session.token)     headers["X-DT-Token"]      = session.token;
 
+  const body = { question };
+  if (followUpContext) body.prev_question = followUpContext;
+
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers,
-      body: JSON.stringify({ question }),
+      body: JSON.stringify(body),
     });
 
     if (response.status === 429) {
@@ -264,29 +303,44 @@ function destroyChart() {
 function renderChart(chartData) {
   destroyChart();
   const ctx = answerChart.getContext("2d");
+  const isBar = chartData.type === "bar";
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 220);
   gradient.addColorStop(0, "rgba(14, 165, 233, 0.14)");
   gradient.addColorStop(1, "rgba(14, 165, 233, 0.01)");
 
+  const barColors = chartData.labels.map((_, i) =>
+    i === 0 ? "rgba(14, 165, 233, 0.75)" : "rgba(148, 163, 184, 0.35)"
+  );
+  const barBorders = chartData.labels.map((_, i) =>
+    i === 0 ? "#0ea5e9" : "#94a3b8"
+  );
+
+  const dataset = isBar ? {
+    label: chartData.unit || "Value",
+    data: chartData.values,
+    backgroundColor: barColors,
+    borderColor: barBorders,
+    borderWidth: 1.5,
+    borderRadius: 6,
+    borderSkipped: false,
+  } : {
+    label: chartData.unit || "Value",
+    data: chartData.values,
+    borderColor: "#0ea5e9",
+    backgroundColor: gradient,
+    borderWidth: 2,
+    tension: 0.4,
+    pointRadius: 3,
+    pointBackgroundColor: "#0ea5e9",
+    pointBorderColor: "#ffffff",
+    pointBorderWidth: 2,
+    fill: true,
+  };
+
   chartInstance = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: chartData.labels,
-      datasets: [{
-        label: chartData.unit || "Value",
-        data: chartData.values,
-        borderColor: "#0ea5e9",
-        backgroundColor: gradient,
-        borderWidth: 2,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: "#0ea5e9",
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 2,
-        fill: true,
-      }],
-    },
+    type: isBar ? "bar" : "line",
+    data: { labels: chartData.labels, datasets: [dataset] },
     options: {
       responsive: true,
       animation: { duration: 700, easing: "easeInOutQuart" },
@@ -307,7 +361,7 @@ function renderChart(chartData) {
       },
       scales: {
         y: {
-          beginAtZero: false,
+          beginAtZero: isBar,
           grid: { color: "rgba(148,163,184,0.12)" },
           ticks: { color: "#94a3b8", font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } },
           border: { color: "transparent" },
@@ -315,9 +369,9 @@ function renderChart(chartData) {
         x: {
           grid: { display: false },
           ticks: {
-            maxTicksLimit: 8,
+            maxTicksLimit: isBar ? 10 : 8,
             color: "#94a3b8",
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 10 },
+            font: { family: "'Plus Jakarta Sans', sans-serif", size: isBar ? 12 : 10 },
           },
           border: { color: "rgba(148,163,184,0.15)" },
         },

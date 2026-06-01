@@ -6,6 +6,7 @@ from typing import Optional
 from typing_extensions import TypedDict
 
 class ChartData(TypedDict):
+    type: str
     labels: list[str]
     values: list[float]
     unit: str
@@ -16,12 +17,26 @@ class ParsedAnswer(TypedDict):
     chart_data: Optional[ChartData]
     uncertainty: bool
     needs_clarification: bool
+    followup_questions: list
 
 def parse_agent_output(raw_text: str) -> ParsedAnswer:
     text = raw_text.strip()
 
     # Detect clarification responses (agent asking the user a question)
     needs_clarification = text.endswith("?") and len(text) < 300
+
+    # Extract follow-up questions (must happen before headline/paragraph split)
+    followup_questions: list = []
+    followup_match = re.search(r'^FOLLOWUP:\s*(\[.*?\])\s*$', text, re.MULTILINE)
+    if followup_match:
+        try:
+            parsed = json.loads(followup_match.group(1))
+            if isinstance(parsed, list):
+                followup_questions = [q for q in parsed if isinstance(q, str) and q.strip()][:3]
+        except (json.JSONDecodeError, ValueError):
+            followup_questions = []
+        text = text[:followup_match.start()] + text[followup_match.end():]
+        text = text.strip()
 
     # Extract chart JSON block
     chart_data = None
@@ -32,11 +47,14 @@ def parse_agent_output(raw_text: str) -> ParsedAnswer:
             labels = raw_chart.get("labels", [])
             values = raw_chart.get("values", [])
             unit = raw_chart.get("unit", "")
+            chart_type = raw_chart.get("type", "line")
+            if chart_type not in ("line", "bar"):
+                chart_type = "line"
             # Validate types before accepting chart data
             if (isinstance(labels, list) and isinstance(values, list)
                     and isinstance(unit, str)
                     and all(isinstance(v, (int, float)) for v in values)):
-                chart_data = {"labels": labels, "values": values, "unit": unit}
+                chart_data = {"type": chart_type, "labels": labels, "values": values, "unit": unit}
         except json.JSONDecodeError:
             chart_data = None
         text = text[:chart_match.start()] + text[chart_match.end():]
@@ -63,4 +81,5 @@ def parse_agent_output(raw_text: str) -> ParsedAnswer:
         chart_data=chart_data,
         uncertainty=uncertainty,
         needs_clarification=needs_clarification,
+        followup_questions=followup_questions,
     )
