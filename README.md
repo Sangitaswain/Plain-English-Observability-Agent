@@ -78,28 +78,28 @@ The `answer_parser.py` module then strips all labels and converts this text outp
 
 ## Features
 
-**Plain-English answers**
+**Plain-English answers**:-
 Every answer starts with YES/NO or a specific number. No jargon, no raw query output, no field names.
 
-**Real-time Dynatrace data**
+**Real-time Dynatrace data**:-
 Every question triggers live queries. The data is never cached.
 
-**Smart follow-up chips**
+**Smart follow-up chips**:-
 After every answer, 2-3 follow-up questions appear as clickable chips. They are specific to the actual data returned, not generic templates. Clicking one sends it as a follow-up question with the previous question as silent context.
 
-**Line and bar charts**
+**Line and bar charts**:-
 Error trends over time render as line charts. Comparison answers (today vs yesterday) render as bar charts. Charts only appear when there is multi-point data worth visualising.
 
-**Two connection modes**
+**Two connection modes**:-
 Users can connect their own Dynatrace account by entering a tenant URL and Platform API Token. Alternatively, they can use the built-in demo mode which connects to a live Dynatrace Playground environment.
 
-**Secure credential handling**
+**Secure credential handling**:-
 Credentials entered on the connect screen are stored in `sessionStorage` only. They are never persisted to disk, never sent to any third party, and are cleared when the browser tab closes. The Dynatrace token only needs read-only scopes.
 
-**Mobile responsive**
+**Mobile responsive**:-
 The interface is fully usable at 375px viewport width with no horizontal scrolling.
 
-**Rate limiting**
+**Rate limiting**:-
 The backend enforces 20 requests per IP per 60 seconds to prevent runaway usage.
 
 ---
