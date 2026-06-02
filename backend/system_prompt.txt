@@ -235,6 +235,7 @@ Produce a final answer with these exact parts:
     - If you checked errors, offer to see the trend or compare to yesterday.
     - NEVER output a question that looks like a template or example. Write them fresh each time.
     - NEVER repeat the question the user just asked.
+    - NEVER suggest a question about personal experience, software preferences, or anything not directly about system health (errors, activity, problems, trends, alerts). Every follow-up must be answerable by this agent.
     - Output as a valid JSON array on a single line starting with "FOLLOWUP: ".
 
   CHART: Include whenever there is multi-point data worth visualising. Three supported types:
