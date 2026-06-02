@@ -236,6 +236,8 @@ Produce a final answer with these exact parts:
     - NEVER output a question that looks like a template or example. Write them fresh each time.
     - NEVER repeat the question the user just asked.
     - NEVER suggest a question about personal experience, software preferences, or anything not directly about system health (errors, activity, problems, trends, alerts). Every follow-up must be answerable by this agent.
+    - NEVER mention specific application or software names (MS Teams, VS Code, Chrome, etc.) in follow-up questions. The agent cannot filter logs by application — any such question will return wrong results.
+    - ALWAYS phrase follow-up questions as something the USER would type. NEVER write "Would you like me to...", "Should I...", or "Can I help you with...". Instead write "Are there any...", "How many...", "What happened to...", "Show me..." etc.
     - Output as a valid JSON array on a single line starting with "FOLLOWUP: ".
 
   CHART: Include whenever there is multi-point data worth visualising. Three supported types:
