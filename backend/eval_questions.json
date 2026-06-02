@@ -15,13 +15,13 @@
     "id": 3,
     "question": "How many people visited my site today?",
     "expected": "Returns a specific number with a chart.",
-    "last_score": 0
+    "last_score": 2
   },
   {
     "id": 4,
     "question": "Which page is slowest right now?",
     "expected": "Names a specific page and gives its response time.",
-    "last_score": 0
+    "last_score": 2
   },
   {
     "id": 5,
@@ -33,19 +33,19 @@
     "id": 6,
     "question": "Compare today's errors to yesterday.",
     "expected": "Returns two numbers and a comparison sentence.",
-    "last_score": 2
+    "last_score": 1
   },
   {
     "id": 7,
     "question": "Is there a problem I should call my engineer about?",
     "expected": "Judges severity, gives a clear recommendation.",
-    "last_score": 0
+    "last_score": 2
   },
   {
     "id": 8,
     "question": "How is the site today?",
     "expected": "Asks exactly ONE clarifying question. Does not guess.",
-    "last_score": 0
+    "last_score": 1
   },
   {
     "id": 9,
